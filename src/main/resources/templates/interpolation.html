@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Визуализация Численных Методов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button {
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        canvas {
+            float: right;
+            margin-right: 20px;
+            width: 800px;
+            height: 600px;
+            margin-top: -200px;
+            margin-left: -100px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h1>Реализация метода линейной интерполяции</h1>
+<div>
+    <label for="inputA">Введите а</label>
+    <input type="number" id="inputA" value="1"><br>
+    <label for="inputB">Введите b</label>
+    <input type="number" id="inputB" value="5"><br>
+    <label for="inputN">Введите N</label>
+    <input type="number" id="inputN" value="20"><br>
+    <label for="interpolationPoint">Точка интерполяции</label>
+    <input type="number" id="interpolationPoint" value="4.6"><br>
+</div>
+<div>
+    <button onclick="drawChart()">Построить график</button>
+    <canvas id="myChart"></canvas><br>
+</div>
+<div id="resultInterpolation">
+    <!-- Здесь будут результаты линейной интерполяции -->
+</div>
+<script>
+    function Function_Yi(x) {
+        return Math.log10(3.0 / 7.0 * Math.pow(x, 2) + 4.2 * Math.pow(x, 3) - 2.9 * x * Math.sin(x));
+    }
+
+    function FindNumber(xI, xw) {
+        let number = 0;
+        while (number < xI.length - 1 && xI[number] <= xw) {
+            number++;
+        }
+        return number - 1;
+    }
+
+    function NewtonInterpolation(xI, yI, xw) {
+        let segmentNumber = FindNumber(xI, xw);
+        let x0 = xI[segmentNumber];
+        let x1 = xI[segmentNumber + 1];
+        let y0 = yI[segmentNumber];
+        let y1 = yI[segmentNumber + 1];
+
+        return y0 + ((y1 - y0) / (x1 - x0)) * (xw - x0);
+    }
+
+    function LagrangeInterpolation(xI, yI, xw) {
+        let segmentNumber = FindNumber(xI, xw);
+        let x0 = xI[segmentNumber];
+        let x1 = xI[segmentNumber + 1];
+        let y0 = yI[segmentNumber];
+        let y1 = yI[segmentNumber + 1];
+
+        return y0 * ((xw - x1) / (x0 - x1)) + y1 * ((xw - x0) / (x1 - x0));
+    }
+
+    function drawChart() {
+        let a = parseFloat(document.getElementById('inputA').value);
+        let b = parseFloat(document.getElementById('inputB').value);
+        let N = parseInt(document.getElementById('inputN').value);
+        let interpolationPoint = parseFloat(document.getElementById('interpolationPoint').value);
+        let xI = [];
+        let yI = [];
+
+        for (let i = 0; i <= N; i++) {
+            xI.push(a + (b - a) * i / N);
+            yI.push(Function_Yi(xI[i]));
+        }
+
+        let ctx = document.getElementById('myChart').getContext('2d');
+        let myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: xI,
+                datasets: [{
+                    label: 'График функции',
+                    data: yI,
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: false
+            }
+        });
+
+        let resultInterpolation = document.getElementById('resultInterpolation');
+        resultInterpolation.innerHTML = `
+                <p>Метод Ньютона: ${NewtonInterpolation(xI, yI, interpolationPoint)}</p>
+                <p>Метод Лагранжа: ${LagrangeInterpolation(xI, yI, interpolationPoint)}</p>
+            `;
+    }
+</script>
+</body>
+</html>

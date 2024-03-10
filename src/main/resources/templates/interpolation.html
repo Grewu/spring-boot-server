@@ -6,59 +6,95 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
         }
         h1 {
             color: #333;
+            text-align: center;
+            margin-top: 0;
         }
         label {
             font-weight: bold;
         }
         input, button {
-            margin: 5px 0;
-            padding: 5px;
+            margin: 10px 0;
+            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 3px;
+            border-radius: 4px;
+            width: calc(100% - 22px);
         }
         button {
             background-color: #007bff;
             color: white;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         button:hover {
             background-color: #0056b3;
         }
-        canvas {
-            float: right;
-            margin-right: 20px;
-            width: 800px;
-            height: 600px;
-            margin-top: -200px;
-            margin-left: -100px;
+        #chart-container {
+            margin-top: 20px;
+            position: relative;
+        }
+        #resultInterpolation {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        #resultInterpolation p {
+            margin: 10px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        #resultInterpolation p span {
+            font-weight: bold;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h1>Реализация метода линейной интерполяции</h1>
-<div>
-    <label for="inputA">Введите а</label>
-    <input type="number" id="inputA" value="1"><br>
-    <label for="inputB">Введите b</label>
-    <input type="number" id="inputB" value="5"><br>
-    <label for="inputN">Введите N</label>
-    <input type="number" id="inputN" value="20"><br>
-    <label for="interpolationPoint">Точка интерполяции</label>
-    <input type="number" id="interpolationPoint" value="4.6"><br>
+<div class="container">
+    <h1>Реализация метода линейной интерполяции</h1>
+    <div>
+        <label for="inputA">Введите a</label>
+        <input type="number" id="inputA" value="1">
+        <label for="inputB">Введите b</label>
+        <input type="number" id="inputB" value="5">
+        <label for="inputN">Введите N</label>
+        <input type="number" id="inputN" value="20">
+        <label for="interpolationPoint">Точка интерполяции</label>
+        <input type="number" id="interpolationPoint" value="4.6">
+        <button onclick="drawChart()">Построить график</button>
+    </div>
+    <div id="chart-container">
+        <canvas id="myChart"></canvas>
+    </div>
+    <div id="resultInterpolation">
+        <p><span>Метод Ньютона:</span> <span id="newtonResult"></span></p>
+        <p><span>Метод Лагранжа:</span> <span id="lagrangeResult"></span></p>
+        <p>Метод линейной интерполяции используется для аппроксимации значений функции между известными точками путем построения прямых линий или полиномов, проходящих через эти точки. Он часто применяется в различных областях, таких как графическое представление данных, анализ временных рядов, предсказание траекторий и других. В данном случае метод Ньютона и метод Лагранжа используются для нахождения значения функции в заданной точке с помощью интерполяции между ближайшими известными значениями.</p>
+    </div>
 </div>
-<div>
-    <button onclick="drawChart()">Построить график</button>
-    <canvas id="myChart"></canvas><br>
-</div>
-<div id="resultInterpolation">
-    <!-- Здесь будут результаты линейной интерполяции -->
-</div>
+
 <script>
+    let myChart = null;
+
     function Function_Yi(x) {
         return Math.log10(3.0 / 7.0 * Math.pow(x, 2) + 4.2 * Math.pow(x, 3) - 2.9 * x * Math.sin(x));
     }
@@ -92,6 +128,10 @@
     }
 
     function drawChart() {
+        if (myChart !== null) {
+            myChart.destroy();
+        }
+
         let a = parseFloat(document.getElementById('inputA').value);
         let b = parseFloat(document.getElementById('inputB').value);
         let N = parseInt(document.getElementById('inputN').value);
@@ -105,28 +145,27 @@
         }
 
         let ctx = document.getElementById('myChart').getContext('2d');
-        let myChart = new Chart(ctx, {
+        myChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: xI,
                 datasets: [{
-                    label: 'График функции',
+                    label: 'График функции: y = log₁₀(3/7 * x² + 4.2x³ - 2.9xsin(x))',
                     data: yI,
                     backgroundColor: 'rgba(255, 99, 132, 0.2)',
                     borderColor: 'rgba(255, 99, 132, 1)',
-                    borderWidth: 1
+                    borderWidth: 2
                 }]
             },
             options: {
-                responsive: false
+                responsive: true
             }
         });
 
-        let resultInterpolation = document.getElementById('resultInterpolation');
-        resultInterpolation.innerHTML = `
-                <p>Метод Ньютона: ${NewtonInterpolation(xI, yI, interpolationPoint)}</p>
-                <p>Метод Лагранжа: ${LagrangeInterpolation(xI, yI, interpolationPoint)}</p>
-            `;
+        let newtonResult = NewtonInterpolation(xI, yI, interpolationPoint);
+        let lagrangeResult = LagrangeInterpolation(xI, yI, interpolationPoint);
+        document.getElementById('newtonResult').textContent = newtonResult;
+        document.getElementById('lagrangeResult').textContent = lagrangeResult;
     }
 </script>
 </body>
